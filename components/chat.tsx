@@ -8,6 +8,7 @@ import {
   ConversationEmptyState,
   ConversationScrollButton,
 } from "@/components/ui/conversation"
+import { IconSparkles } from '@tabler/icons-react';
 
 
 export default function Chat() {
@@ -22,36 +23,20 @@ export default function Chat() {
   return (
     <div className="flex flex-col h-full w-full">
       {/* Header */}
-      <div className="flex items-center justify-center py-4 border-b border-[#BED8D4] bg-[#BED8D4]/40">
-        <h1 className="text-xl font-semibold text-[#397F77]">💬 Chat Assistant</h1>
-      </div>
+
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 scrollbar-thin scrollbar-thumb-[#BED8D4] scrollbar-track-transparent">
-        {messages.length === 0 && (
-          <div className="flex items-center justify-center h-full text-[#5F5566]">
-            <p>Hi there! I&apos;m Jabot How can I assist you today?</p>
-          </div>
-        )}
-        
-        {messages.map(message => (
-          <div
-            key={message.id}
-            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-          >
-            <div
-              className={`max-w-[80%] px-4 py-3 rounded-2xl shadow-lg transition-all duration-300 ease-in-out animate-in fade-in slide-in-from-bottom-2 ${
-                message.role === 'user'
-                  ? 'bg-[#397F77] text-[#F7F9F9] rounded-br-md'
-                  : 'bg-[#BED8D4]/30 text-[#5F5566] rounded-bl-md border border-[#BED8D4]'
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs opacity-70">
-                  {message.role === 'user' ? '👤 You' : '🤖 Assistant'}
-                </span>
-              </div>
-              <div className="whitespace-pre-wrap text-sm leading-relaxed">
+      <Conversation>
+        <ConversationContent>
+          {messages.length === 0 ? (
+            <ConversationEmptyState
+              title="Welcome to Ellwood Management AI"
+              description="Your intelligent assistant for property management. Ask me anything about your HOA rules, policies, or community guidelines!"
+              icon={<IconSparkles size={48} className="text-muted-foreground" />}
+            />
+          ) : (
+            messages.map((message) => <div key={message.id}>
+              <div>
                 {message.parts.map((part, i) => {
                   switch (part.type) {
                     case 'text':
@@ -59,11 +44,11 @@ export default function Chat() {
                   }
                 })}
               </div>
-            </div>
-          </div>
-        ))}
-        <div ref={messagesEndRef} />
-      </div>
+            </div>)
+          )}
+        </ConversationContent>
+        <ConversationScrollButton />
+      </Conversation>
 
       {/* Input Form */}
       <div className="border-t border-[#BED8D4] bg-[#BED8D4]/40 backdrop-blur-sm p-4">
