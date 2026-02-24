@@ -25,3 +25,12 @@ export async function matchRules(queryEmbedding: number[], hoaId: string) {
   if (error) throw error;
   return data;
 }
+
+export async function getHoas(): Promise<{ id: string; name: string }[]> {
+  const { data, error } = await supabaseAdmin
+    .from("hoas")
+    .select("id, name")
+    .order("name");
+  if (error) throw error;
+  return data ?? [];
+}

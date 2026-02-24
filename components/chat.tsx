@@ -2,7 +2,6 @@
 
 import { useChat } from "@ai-sdk/react";
 import { useState, useRef, useEffect } from "react";
-import { Card } from "@/components/ui/card";
 import {
   Conversation,
   ConversationContent,
@@ -12,31 +11,46 @@ import {
 import { Message, MessageContent } from "@/components/ui/message";
 import { Orb } from "@/components/ui/orb";
 import { Response } from "@/components/ui/response";
-import { IconSparkles } from "@tabler/icons-react";
+import { ChatBoxInput } from "@/components/chatboxinput";
 
-export default function Chat() {
+interface ChatProps {
+  hoaId: string | null;
+  selectedModel: string;
+  onModelChange: (model: string) => void;
+}
+
+export default function Chat({ hoaId, selectedModel, onModelChange }: ChatProps) {
+  const { messages, sendMessage, status } = useChat();
   const [input, setInput] = useState("");
-  const { messages, sendMessage } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const handleSubmit = () => {
+    if (input.trim() && hoaId) {
+      sendMessage({ text: input }, { body: { model: selectedModel, hoaId } });
+      setInput("");
+    }
+  };
+
   return (
-    <div className="flex flex-col h-full w-full">
-      {/* Header */}
+    <div className="flex flex-col flex-1 w-full overflow-hidden">
 
       {/* Messages Container */}
-      <Card className="relative mx-auto my-0 size-full h-[400px] py-0">
-        <div className="flex h-full flex-col">
-          <Conversation>
+      <div className="relative flex flex-1 overflow-hidden">
+        <Conversation className="w-full">
             <ConversationContent>
               {messages.length === 0 ? (
                 <ConversationEmptyState
                   icon={<Orb className="size-12" />}
                   title="Welcome to Ellwood Management AI"
-                  description="Your intelligent assistant for property management. Ask me anything about your HOA rules, policies, or community guidelines!"
+                  description={
+                    hoaId
+                      ? "Your intelligent assistant for property management. Ask me anything about your HOA rules, policies, or community guidelines!"
+                      : "Select your HOA association below to get started."
+                  }
                 />
               ) : (
                 <>
@@ -63,40 +77,24 @@ export default function Chat() {
                       )}
                     </Message>
                   ))}
+                  <div ref={messagesEndRef} />
                 </>
               )}
             </ConversationContent>
             <ConversationScrollButton />
-          </Conversation>
-        </div>
-      </Card>
+        </Conversation>
+      </div>
 
-      {/* Input Form */}
-      <div className="border-t border-[#BED8D4] bg-[#BED8D4]/40 backdrop-blur-sm p-4">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (input.trim()) {
-              sendMessage({ text: input });
-              setInput("");
-            }
-          }}
-          className="flex gap-3"
-        >
-          <input
-            className="flex-1 p-3 rounded-full bg-[#F7F9F9] border border-[#BED8D4] text-[#5F5566] placeholder-[#815E5B]/50 focus:outline-none focus:ring-2 focus:ring-[#397F77] focus:border-transparent transition-all duration-200"
-            value={input}
-            placeholder="Type your message..."
-            onChange={(e) => setInput(e.currentTarget.value)}
-          />
-          <button
-            type="submit"
-            disabled={!input.trim()}
-            className="px-6 py-3 bg-[#397F77] text-[#F7F9F9] rounded-full font-medium hover:bg-[#397F77]/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105 active:scale-95"
-          >
-            Send
-          </button>
-        </form>
+      {/* Input */}
+      <div className="flex justify-center border-t border-[#BED8D4] bg-[#BED8D4]/40 backdrop-blur-sm p-4">
+        <ChatBoxInput
+          value={input}
+          onChange={setInput}
+          onSubmit={handleSubmit}
+          selectedModel={selectedModel}
+          onModelChange={onModelChange}
+          disabled={!hoaId || status === "streaming"}
+        />
       </div>
     </div>
   );
