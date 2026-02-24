@@ -13,17 +13,17 @@ import { cn } from "@/lib/utils";
 import {
   IconArrowUp,
   IconCloud,
-  IconHome,
-  IconQuestionMark,
+  IconGrill,
+  IconParking,
   IconRuler2,
 } from "@tabler/icons-react";
 import { useRef } from "react";
 
 const PROMPTS = [
   {
-    icon: IconHome,
-    text: "Rental rules",
-    prompt: "What are the rules around renting or leasing my property in this HOA?",
+    icon: IconGrill,
+    text: "Common areas rules",
+    prompt: "What are the rules and regulations for using the common areas in our HOA community?",
   },
   {
     icon: IconRuler2,
@@ -31,9 +31,9 @@ const PROMPTS = [
     prompt: "What are the landscaping and lawn maintenance requirements for homeowners?",
   },
   {
-    icon: IconQuestionMark,
-    text: "Violation process",
-    prompt: "How does the HOA handle rule violations and what are the penalties?",
+    icon: IconParking,
+    text: "Parking Violations",
+    prompt: "How does the HOA handle parking violations and what are the penalties?",
   },
 ];
 

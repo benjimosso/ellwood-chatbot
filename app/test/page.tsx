@@ -1,5 +1,4 @@
-import Ai01 from "@/components/ai-01";
-import { Conversation } from "@/components/ui/conversation";
+
 
 export default function TestPage() {
   return (

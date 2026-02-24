@@ -44,6 +44,7 @@ export default function Chat({ hoaId, selectedModel, onModelChange }: ChatProps)
             <ConversationContent>
               {messages.length === 0 ? (
                 <ConversationEmptyState
+                  className="mt-20"
                   icon={<Orb className="size-12" />}
                   title="Welcome to Ellwood Management AI"
                   description={
