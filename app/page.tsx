@@ -1,39 +1,80 @@
 'use client';
+import { useEffect, useState } from 'react';
 import Chat from '@/components/chat';
+import { MODELS } from '@/components/chatboxinput';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
+interface Hoa {
+  id: string;
+  name: string;
+}
 
 export default function Home() {
+  const [hoas, setHoas] = useState<Hoa[]>([]);
+  const [hoaId, setHoaId] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string>(MODELS[0].value);
+  const [loadingHoas, setLoadingHoas] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/hoas')
+      .then((res) => res.json())
+      .then((data: Hoa[]) => {
+        setHoas(data);
+        if (data.length === 1) setHoaId(data[0].id);
+      })
+      .catch(console.error)
+      .finally(() => setLoadingHoas(false));
+  }, []);
+
   return (
-    <div className="h-screen bg-gradient-to-br from-[#F7F9F9] via-[#BED8D4]/30 to-[#F7F9F9] flex flex-col">
-      <div className="flex flex-col items-center flex-1 py-6 px-4 overflow-hidden">
-        <div className="w-full max-w-4xl flex flex-col flex-1 overflow-hidden">
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold font-sans text-[#397F77] mb-2">Ellwood Management AI</h1>
-            <p className="text-[#5F5566] text-lg">Your intelligent assistant for property management</p>
-          </div>
+    <div className="h-svh flex flex-col overflow-hidden bg-[#F7F9F9]">
 
-            <div className="bg-[#F7F9F9] flex-1 rounded-lg shadow-2xl border border-[#BED8D4] flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto">
-              <Chat />
-            </div>
-            </div>
-
-          <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-            <div className="p-4">
-              <div className="text-[#397F77] text-2xl mb-2">⚡</div>
-              <p className="text-[#5F5566] text-sm">Instant Answers</p>
-            </div>
-            <div className="p-4">
-              <div className="text-[#397F77] text-2xl mb-2">🔒</div>
-              <p className="text-[#5F5566] text-sm">Secure & Reliable</p>
-            </div>
-            <div className="p-4">
-              <div className="text-[#397F77] text-2xl mb-2">🎯</div>
-              <p className="text-[#5F5566] text-sm">Always Available</p>
-            </div>
-          </div>
+      {/* Header */}
+      <header className="flex items-center justify-between shrink-0 px-4 h-14 border-b border-[#BED8D4] bg-[#F7F9F9]/80 backdrop-blur-sm">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold text-[#397F77] tracking-tight">Ellwood Management AI</span>
         </div>
+        <Select
+          value={hoaId ?? ''}
+          onValueChange={(val) => setHoaId(val)}
+          disabled={loadingHoas || hoas.length === 0}
+        >
+          <SelectTrigger className="w-56 h-8 text-sm border-[#BED8D4] bg-white text-[#5F5566]">
+            <SelectValue
+              placeholder={
+                loadingHoas
+                  ? 'Loading…'
+                  : hoas.length === 0
+                  ? 'No associations'
+                  : 'Select association…'
+              }
+            />
+          </SelectTrigger>
+          <SelectContent>
+            {hoas.map((hoa) => (
+              <SelectItem key={hoa.id} value={hoa.id}>
+                {hoa.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </header>
+
+      {/* Chat fills remaining height */}
+      <div className="flex flex-1 overflow-hidden">
+        <Chat
+          hoaId={hoaId}
+          selectedModel={selectedModel}
+          onModelChange={setSelectedModel}
+        />
       </div>
+
     </div>
   );
 }

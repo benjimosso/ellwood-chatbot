@@ -3,11 +3,24 @@ import { openai } from "@ai-sdk/openai";
 import { z } from "zod";
 import { matchRules } from "@/lib/supabase/admin";
 
+const ALLOWED_MODELS = ["o4-mini", "gpt-4o", "gpt-4o-mini"] as const;
+type AllowedModel = (typeof ALLOWED_MODELS)[number];
+
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json();
+  const { messages, model: requestedModel, hoaId }: {
+    messages: UIMessage[];
+    model?: string;
+    hoaId?: string;
+  } = await req.json();
+
+  const model: AllowedModel = ALLOWED_MODELS.includes(requestedModel as AllowedModel)
+    ? (requestedModel as AllowedModel)
+    : "o4-mini";
+
+  const resolvedHoaId = hoaId || process.env.HOA_ID!;
 
   const result = streamText({
-    model: openai("o4-mini"),
+    model: openai(model),
     system: `You are chatbot, a helpful HOA (Homeowners Association) assistant. When a user asks a question, use the getContext tool to retrieve relevant rules and information from the knowledge base. Always base your answers on the context provided by the tool. If the context doesn't contain relevant information, let the user know you couldn't find specific rules about their question.`,
     messages: await convertToModelMessages(messages),
     tools: {
@@ -22,14 +35,12 @@ export async function POST(req: Request) {
             model: openai.embedding("text-embedding-3-small"),
             value: query,
           });
-          console.log("Generated embedding for query:", embedding, "...");
-          const hoaId = process.env.HOA_ID!;
-          const results = await matchRules(embedding, hoaId);
-          console.log("matchRules results:", results);
+          const results = await matchRules(embedding, resolvedHoaId);
+          
           const context = results
             .map((r: { content: string }) => r.content)
             .join("\n\n");
-          console.log("Retrieved context:", context);
+          
           return { context };
         },
       }),
